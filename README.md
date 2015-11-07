@@ -26,6 +26,20 @@ Review the delegate list using the following command:
 
 ## With ImageMagick
 
+### Installation
+
+We have not properly configured ImageMagick for our purposes here, but if one 
+is interested in doing so, review the following ``configure`` layout, if 
+building from source **after Ghostscript and GhostscriptXPS has been installed**:
+
+    ./configure CPPFLAGS='-I/opt/local/include' LDFLAGS='-L/opt/local/lib' \
+    --enable-delegate-build --enable-shared --disable-static \
+    --with-modules --with-quantum-depth=16 --with-gslib --without-wmf \
+    --disable-silent-rules --disable-dependency-tracking --without-pango \
+    --with-gs-font-dir=/opt/local/share/ghostscript/fonts/ --with-lqr
+
+See http://www.imagemagick.org/script/advanced-unix-installation.php#configure.
+
 ### Stuff
 
     -resize 100x40
