@@ -20,6 +20,10 @@ the DELEGATE list properly includes the right binaries.
 2. brew install gs # ghostscript
 3. brew install imagemagick
 
+Review the delegate list using the following command:
+
+    $ convert -list delegate
+
 ## With ImageMagick
 
 ### Stuff
