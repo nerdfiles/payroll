@@ -1,0 +1,74 @@
+global myFolder
+
+set tid to AppleScript's text item delimiters
+
+tell application "Adobe InDesign CS5.5"
+  set currDoc to active document  
+  set theMissingLinks to every link of currDoc whose status is link missing  
+  if theMissingLinks is not {} then set myFolder to choose folder with prompt "Where to search for the missing links?" --select a mounted volume, folder ...  
+
+  repeat with missingLink from 1 to count of theMissingLinks  
+      set currMissingLink to item missingLink of theMissingLinks  
+      set currFileName to name of currMissingLink  
+      set theResultList to my mdFind(currFileName)  
+
+      if theResultList is not {} then  
+          repeat with i from 1 to count of theResultList  
+              set theItem to (item i of theResultList)  
+
+              set currDialog to display dialog theItem with title "Relink this file?" buttons {"OK", "Cancel", "Show in Finder first"}  
+              if button returned of currDialog is "OK" then  
+                  try  
+                      relink currMissingLink to POSIX file theItem  
+                  on error e  
+                      display dialog e  
+                  end try  
+              else if button returned of currDialog is "Show in Finder first" then  
+showcurrMissingLink --select the missing link in ID  
+                  my revealInFinder(theItem) --show the found file in finder  
+                  activate  
+                  set currDialog to display dialog theItem with title "Please switch to Finder to see the file. Relink the file shown in Finderwindow?" buttons {"OK", "Cancel", "Continue searching"}  
+                  if button returned of currDialog is "OK" then  
+                      try  
+                          relink currMissingLink to POSIX file theItem  
+                      on error e  
+                          display dialog e  
+                      end try  
+                  end if  
+              end if  
+          end repeat  
+      end if  
+  end repeat  
+
+end tell
+
+on mdFind(currFileName)
+  set AppleScript's text item delimiters to return  
+  set PathToAllFiles to every text item of (do shell script "mdfind -onlyin '" & quoted form of POSIX path of myFolder & "'" & space & " -name '" & currFileName & "'")  
+
+  set PathToAllFiles to my cleanList(currFileName, PathToAllFiles)  
+end mdFind
+
+
+
+set AppleScript's text item delimiters to tid
+
+on cleanList(fileName, listOfFilePaths)
+  set myCleanList to {}  
+  set AppleScript's text item delimiters to "/"  
+  repeat with p from 1 to count of listOfFilePaths  
+      set aName to (text item -1 of (item p of listOfFilePaths))  
+      if aName is equal to fileName then set end of myCleanList to (item p of listOfFilePaths)  
+  end repeat  
+  return myCleanList  
+end cleanList
+
+
+
+on revealInFinder(somePosixPath)
+  tell application "Finder"  
+      set myAlias to (POSIX file somePosixPath) as alias  
+      activate  
+      reveal myAlias  
+  end tell  
+end revealInFinder

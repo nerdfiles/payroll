@@ -1,0 +1,39 @@
+set myFolder to choose folder with prompt "Where to search for the missing link?" --select a mounted volume, folder ...
+
+set tid to AppleScript's text item delimiters
+set AppleScript's text item delimiters to ":"
+
+tell application "Adobe InDesign CC 2014"
+  set myGraphicFilePath to (file path of (item link of (item 1 of all graphics of (item 1 of selection))) as text)
+end tell
+
+set myGraphicName to text item -1 of myGraphicFilePath
+set myGraphicFilePath to quoted form of POSIX path of myGraphicFilePath
+
+set AppleScript's text item delimiters to return
+set PathToAllFiles to every text item of (do shell script "mdfind -onlyin '" & quoted form of POSIX path of myFolder & "'" & space & " -name '" & myGraphicName & "'")
+
+set PathToAllFiles to my cleanList(myGraphicName, PathToAllFiles)
+
+repeat with i from 1 to count of PathToAllFiles
+  set theItem to (item i of PathToAllFiles)
+
+  if button returned of (display dialog theItem with title "Relink this file?" buttons {"OK", "Cancel", "Go on"}) is "OK" then
+    tell application "Adobe InDesign CC 2014"
+      relink (item link of (item 1 of all graphics of (item 1 of selection))) to POSIX file theItem
+    end tell
+  end if
+end repeat
+
+
+set AppleScript's text item delimiters to tid
+
+on cleanList(fileName, listOfFilePaths)
+  set mycleanlist to {}
+  set applescript's text item delimiters to "/"
+  repeat with p from 1 to count of listoffilepaths
+    set aname to (text item -1 of (item p of listoffilepaths))
+    if aname is equal to filename then set end of mycleanlist to (item p of listoffilepaths)
+  end repeat
+  return myCleanList
+end cleanList
